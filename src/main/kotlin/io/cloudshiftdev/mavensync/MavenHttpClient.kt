@@ -39,7 +39,7 @@ internal class MavenHttpClient(logHttpHeaders: Boolean, credentials: BasicAuthCr
                 contentType(ContentType.Application.OctetStream)
                 setBody(LocalFileContent(file))
             }
-        logger.info { "Uploaded $url: ${resp.status}" }
+        logger.info { "Uploaded $url: status=${resp.status} size=${file.length()}" }
     }
 
     internal suspend fun upload(url: Url, content: String) {
