@@ -1,0 +1,60 @@
+name: 'Build KProcess'
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "*" ]
+permissions:
+  contents: 'write'
+env:
+  GRADLE_BUILD_ACTION_CACHE_DEBUG_ENABLED: 'false'
+  ORG_GRADLE_PROJECT_signingInMemoryKey: '${{ secrets.SIGNING_KEY }}'
+  ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: '${{ secrets.SIGNING_PASSWORD }}'
+  ORG_GRADLE_PROJECT_mavenCentralUsername: '${{ secrets.SONATYPEUSERNAME }}'
+  ORG_GRADLE_PROJECT_mavenCentralPassword: '${{ secrets.SONATYPEPASSWORD }}'
+jobs:
+  build:
+    runs-on: 'ubuntu-latest'
+    steps:
+    # https://github.com/hmarr/debug-action
+    - uses: 'hmarr/debug-action@cd1afbd7852b7ad7b1b7a9a1b03efebd3b0a1820' # v3.0.0
+
+    # https://github.com/zgosalvez/github-actions-ensure-sha-pinned-actions
+    - uses: 'zgosalvez/github-actions-ensure-sha-pinned-actions@74606c30450304eee8660aae751818321754feb1' # v3.0.9
+
+    # https://github.com/actions/checkout
+    - name: 'checkout'
+      uses: 'actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332' # v4.1.7
+
+    # https://github.com/actions/setup-java
+    - name: 'Set up JDK'
+      uses: 'actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9' # v4.2.1
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        check-latest: 'true'
+
+    # https://github.com/gradle/actions/tree/main/setup-gradle
+    - name: 'Set up Gradle'
+      uses: 'gradle/actions/setup-gradle@31ae3562f68c96d481c31bc1a8a55cc1be162f83' # v3.4.1
+      with:
+        gradle-version: 'wrapper'
+        gradle-home-cache-includes: |-
+          jdks
+          caches
+          notifications
+        gradle-home-cache-cleanup: 'true'
+        validate-wrappers: true
+
+    # https://github.com/gradle/actions/tree/main/dependency-submission
+    - name: "Generate and submit dependency graph"
+      uses: "gradle/actions/dependency-submission@31ae3562f68c96d481c31bc1a8a55cc1be162f83" # v3.4.1
+      env:
+        DEPENDENCY_GRAPH_EXCLUDE_PROJECTS: "^:(build-logic|buildSrc|.*[Tt]test.*)"
+        DEPENDENCY_GRAPH_EXCLUDE_CONFIGURATIONS: ".*[Tt]est.*Classpath"
+
+    - name: 'Build'
+      run: './gradlew build --info --scan --stacktrace'
+
+    - name: 'Publish'
+      run: './gradlew publishAllPublicationsToMavenCentralRepository --info --stacktrace --no-configuration-cache'

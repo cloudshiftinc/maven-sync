@@ -1,0 +1,14 @@
+{
+  "transferChecksums" : false,
+  "transferSignatures" : true,
+  "artifactConcurrency" : 3,
+  "source": {
+    "logHttpHeaders" : false,
+    "crawlDelay": "100ms",
+    "downloadDelay": "1s",
+    "paths": []
+  },
+  "target": {
+    "logHttpHeaders" : false
+  }
+}

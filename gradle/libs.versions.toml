@@ -1,0 +1,35 @@
+# Reference: https://docs.gradle.org/current/userguide/platforms.html
+
+[versions]
+kotlin = "2.1.0"
+hoplite = "2.9.0"
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+vanniktech-maven-publish = { id = "com.vanniktech.maven.publish", version = "0.30.0" }
+ktfmt = { id = "com.ncorti.ktfmt.gradle", version = "0.18.0" }
+
+
+[libraries]
+kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.10.1" }
+oshai-kotlinLogging = { module = "io.github.oshai:kotlin-logging-jvm", version = "7.0.3" }
+pearx-kasechange = { module = "net.pearx.kasechange:kasechange-jvm", version = "1.4.1" }
+guava = { module = "com.google.guava:guava", version = "33.4.0-jre" }
+
+ktor-bom = { module = "io.ktor:ktor-bom", version = "3.0.3" }
+
+ktor-client-core = { module = "io.ktor:ktor-client-core" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp" }
+ktor-client-auth = { module = "io.ktor:ktor-client-auth" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging" }
+
+sksmauel-hoplite = { module = "com.sksamuel.hoplite:hoplite-core", version.ref = "hoplite" }
+sksmauel-hoplite-json = { module = "com.sksamuel.hoplite:hoplite-json", version.ref = "hoplite" }
+
+ksoup-base = {module = "com.fleeksoft.ksoup:ksoup", version = "0.2.1" }
+
+##### Testing libraries
+
+kotest-bom = { module = "io.kotest:kotest-bom", version = "5.9.1" }
+kotest-assertions-core = { module = "io.kotest:kotest-assertions-core" }
+kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5" }
