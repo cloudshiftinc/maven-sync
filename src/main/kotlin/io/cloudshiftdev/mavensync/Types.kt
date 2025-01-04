@@ -28,7 +28,7 @@ internal value class ArtifactVersion(val value: String) {
 internal data class Coordinates(
     val group: Group,
     val artifact: Artifact,
-    val artifactVersion: ArtifactVersion
+    val artifactVersion: ArtifactVersion,
 ) {
     override fun toString(): String {
         return "${group.value}:${artifact.value}:${artifactVersion.value}"

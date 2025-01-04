@@ -47,9 +47,7 @@ internal class MavenHttpClient(logHttpHeaders: Boolean, credentials: BasicAuthCr
         logger.info { "Uploaded $url: ${resp.status}" }
     }
 
-    internal suspend fun parseChildLinks(
-        url: Url,
-    ): Sequence<Url> {
+    internal suspend fun parseChildLinks(url: Url): Sequence<Url> {
         val baseUrl = url.toString()
         return parseContent(url)
             .body()
@@ -70,9 +68,7 @@ internal class MavenHttpClient(logHttpHeaders: Boolean, credentials: BasicAuthCr
             ContentType.Text.Xml to Parser.xmlParser(),
         )
 
-    internal suspend fun parseContent(
-        url: Url,
-    ): Document {
+    internal suspend fun parseContent(url: Url): Document {
         return download(url) { response, file ->
             val responseContentType =
                 response.contentType() ?: throw MissingContentTypeException(response)
@@ -80,7 +76,7 @@ internal class MavenHttpClient(logHttpHeaders: Boolean, credentials: BasicAuthCr
                 parserMap[responseContentType]?.newInstance()
                     ?: throw ResponseException(
                         response,
-                        "No parser for content type: $responseContentType"
+                        "No parser for content type: $responseContentType",
                     )
             parser.parseInput(file.reader().buffered(), url.toString())
         }
@@ -138,9 +134,8 @@ internal class ConflictException(response: HttpResponse, cachedResponseText: Str
             "${response.status}. Text: \"$cachedResponseText\""
 }
 
-internal class MissingContentTypeException(
-    response: HttpResponse,
-) : ResponseException(response, "") {
+internal class MissingContentTypeException(response: HttpResponse) :
+    ResponseException(response, "") {
 
     override val message: String =
         "Missing content type(${response.call.request.method.value} ${response.call.request.url}"
@@ -168,7 +163,7 @@ private object HttpClientFactory {
                 headers {
                     append(
                         "User-Agent",
-                        "Gradle/8.7 (Mac OS X;15.1.1;aarch64) (Eclipse Adoptium;21.0.2;21.0.2+13-LTS)"
+                        "Gradle/8.7 (Mac OS X;15.1.1;aarch64) (Eclipse Adoptium;21.0.2;21.0.2+13-LTS)",
                     )
                 }
             }
@@ -179,7 +174,7 @@ private object HttpClientFactory {
                         credentials {
                             BasicAuthCredentials(
                                 username = credentials.username,
-                                password = credentials.password
+                                password = credentials.password,
                             )
                         }
                         realm = "Access to the maven repository"
@@ -212,7 +207,7 @@ private object HttpClientFactory {
                                 404 ->
                                     throw MissingContentException(
                                         exception.response,
-                                        exception.message
+                                        exception.message,
                                     )
                                 409 ->
                                     throw ConflictException(exception.response, exception.message)

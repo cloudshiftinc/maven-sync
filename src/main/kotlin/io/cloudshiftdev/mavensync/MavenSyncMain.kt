@@ -64,7 +64,7 @@ private suspend fun executeSync(config: SyncConfig) {
                         sourceRepository.crawlArtifactMetadata(
                             channel = this,
                             crawlDelay = config.source.crawlDelay,
-                            paths = config.source.paths
+                            paths = config.source.paths,
                         )
                     }
                 repeat(config.artifactConcurrency) {
@@ -83,7 +83,7 @@ private fun RepositoryConfig.toMavenHttpRepository(): MavenHttpRepository {
     return MavenHttpRepository.create(
         url = url,
         credentials = credentials,
-        logHttpHeaders = logHttpHeaders
+        logHttpHeaders = logHttpHeaders,
     )
 }
 
@@ -91,7 +91,7 @@ private suspend fun handleArtifact(
     metadata: ArtifactMetadata,
     sourceRepository: MavenHttpRepository,
     targetRepository: MavenHttpRepository,
-    config: SyncConfig
+    config: SyncConfig,
 ) {
     val targetMetadata = targetRepository.queryArtifactMetadata(metadata.group, metadata.artifact)
     val sourceVersions = metadata.artifactVersions.toSet()
@@ -109,7 +109,7 @@ private suspend fun handleArtifact(
                 sourceRepository.listArtifactVersionAssets(
                     coordinates,
                     config.transferChecksums,
-                    config.transferSignatures
+                    config.transferSignatures,
                 )
 
             // copy each asset to target
@@ -125,14 +125,14 @@ internal data class Arg(
     val names: List<String>,
     val description: String,
     val default: String? = null,
-    val required: Boolean = false
+    val required: Boolean = false,
 ) {
     companion object {
         fun create(
             name: String,
             description: String,
             default: String? = null,
-            required: Boolean = false
+            required: Boolean = false,
         ) = Arg(listOf(name), description, default, required)
     }
 

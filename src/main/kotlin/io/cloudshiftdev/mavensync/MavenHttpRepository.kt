@@ -16,7 +16,7 @@ internal interface MavenHttpRepository : AutoCloseable {
     suspend fun crawlArtifactMetadata(
         channel: SendChannel<ArtifactMetadata>,
         crawlDelay: Duration,
-        paths: List<String>
+        paths: List<String>,
     )
 
     suspend fun queryArtifactMetadata(group: Group, artifact: Artifact): ArtifactMetadata
@@ -24,7 +24,7 @@ internal interface MavenHttpRepository : AutoCloseable {
     suspend fun listArtifactVersionAssets(
         coordinates: Coordinates,
         includeChecksums: Boolean,
-        includeSignatures: Boolean
+        includeSignatures: Boolean,
     ): List<ArtifactVersionAsset>
 
     suspend fun copyAsset(asset: ArtifactVersionAsset, targetRepository: MavenHttpRepository)
@@ -37,7 +37,7 @@ internal interface MavenHttpRepository : AutoCloseable {
         fun create(
             url: String,
             credentials: RepositoryCredentials? = null,
-            logHttpHeaders: Boolean = false
+            logHttpHeaders: Boolean = false,
         ): MavenHttpRepository {
             val theBaseUrl =
                 when {
@@ -57,7 +57,7 @@ private class DefaultMavenHttpRepository(
     private val mavenHttpClient =
         MavenHttpClient(
             logHttpHeaders,
-            credentials?.let { BasicAuthCredentials(it.username, it.password) }
+            credentials?.let { BasicAuthCredentials(it.username, it.password) },
         )
 
     override fun close() {
@@ -67,7 +67,7 @@ private class DefaultMavenHttpRepository(
     override suspend fun crawlArtifactMetadata(
         channel: SendChannel<ArtifactMetadata>,
         crawlDelay: Duration,
-        paths: List<String>
+        paths: List<String>,
     ) {
         if (paths.isEmpty()) {
             crawlDirectoryListings(repoUrl, channel, crawlDelay)
@@ -91,17 +91,13 @@ private class DefaultMavenHttpRepository(
 
     override suspend fun queryArtifactMetadata(group: Group, artifact: Artifact): ArtifactMetadata {
         return readPossibleArtifactMetadata(metadataUrl(group, artifact))
-            ?: ArtifactMetadata(
-                group = group,
-                artifact = artifact,
-                artifactVersions = emptyList(),
-            )
+            ?: ArtifactMetadata(group = group, artifact = artifact, artifactVersions = emptyList())
     }
 
     override suspend fun listArtifactVersionAssets(
         coordinates: Coordinates,
         includeChecksums: Boolean,
-        includeSignatures: Boolean
+        includeSignatures: Boolean,
     ): List<ArtifactVersionAsset> {
         val baseName = "${coordinates.artifact.value}-${coordinates.artifactVersion.value}"
         val url = url(coordinates)
@@ -125,7 +121,7 @@ private class DefaultMavenHttpRepository(
 
     override suspend fun copyAsset(
         asset: ArtifactVersionAsset,
-        targetRepository: MavenHttpRepository
+        targetRepository: MavenHttpRepository,
     ) {
         mavenHttpClient.download(url(asset.coordinates, asset.name)) { _, file ->
             targetRepository.uploadAsset(asset, file.toPath())
@@ -149,7 +145,7 @@ private class DefaultMavenHttpRepository(
                 versions = versions.map { it.value },
                 lastUpdated = "20241224173330", // TODO
                 latest = coordinates.artifactVersion.value,
-                release = coordinates.artifactVersion.value
+                release = coordinates.artifactVersion.value,
             )
 
         val metadataXml = metadataXmlHolder.toXml()
@@ -161,7 +157,7 @@ private class DefaultMavenHttpRepository(
     private suspend fun crawlDirectoryListings(
         url: Url,
         channel: SendChannel<ArtifactMetadata>,
-        crawlDelay: Duration
+        crawlDelay: Duration,
     ) {
         logger.info { "Reading index: $url" }
         val recurseDirs = mutableListOf<Url>()
@@ -269,7 +265,7 @@ private data class MavenMetadataXml(
     val versions: List<String>,
     val lastUpdated: String,
     val latest: String,
-    val release: String
+    val release: String,
 ) {
     fun toXml(): String {
         val escaper = XmlEscapers.xmlContentEscaper()
