@@ -7,7 +7,24 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ktfmt)
-    alias(libs.plugins.vanniktech.maven.publish)
+    alias(libs.plugins.vanniktech.mavenPublishBase)
+    application
+}
+
+application {
+    mainClass = "io.cloudshiftdev.mavensync.MavenSyncMainKt"
+}
+
+val distConf = configurations.create("dist")
+
+val distArtifact = artifacts.add(distConf.name, tasks.named("distZip"))
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            artifact(distArtifact)
+        }
+    }
 }
 
 dependencies {
@@ -77,6 +94,7 @@ mavenPublishing {
             url = "https://github.com/cloudshiftinc/maven-sync"
         }
     }
+
 }
 
 testing {

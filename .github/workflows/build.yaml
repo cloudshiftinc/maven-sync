@@ -50,5 +50,5 @@ jobs:
     - name: 'Build'
       run: './gradlew build --info --scan --stacktrace'
 
-#    - name: 'Publish'
-#      run: './gradlew publishAllPublicationsToMavenCentralRepository --info --stacktrace --no-configuration-cache'
+    - name: 'Publish'
+      run: './gradlew publish --info --stacktrace --no-configuration-cache'
