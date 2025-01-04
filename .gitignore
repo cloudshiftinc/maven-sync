@@ -42,3 +42,5 @@ build/
 ## Kotlin 2.0
 .kotlin/
 
+test.json
+

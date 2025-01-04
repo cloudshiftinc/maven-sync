@@ -14,8 +14,6 @@ private val logger = KotlinLogging.logger {}
 internal interface MavenHttpRepository : AutoCloseable {
 
     suspend fun crawlArtifactMetadata(
-        includePredicate: (ArtifactMetadata) -> Boolean = { true },
-        excludePredicate: (ArtifactMetadata) -> Boolean = { false },
         channel: SendChannel<ArtifactMetadata>,
         crawlDelay: Duration,
         paths: List<String>
@@ -67,8 +65,6 @@ private class DefaultMavenHttpRepository(
     }
 
     override suspend fun crawlArtifactMetadata(
-        includePredicate: (ArtifactMetadata) -> Boolean,
-        excludePredicate: (ArtifactMetadata) -> Boolean,
         channel: SendChannel<ArtifactMetadata>,
         crawlDelay: Duration,
         paths: List<String>

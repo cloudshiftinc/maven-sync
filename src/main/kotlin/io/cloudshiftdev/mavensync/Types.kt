@@ -61,4 +61,3 @@ internal object MavenSpec {
 
     val IgnoredFiles = setOf("archetype-catalog.xml", "last_updated.txt", "robots.txt")
 }
-
