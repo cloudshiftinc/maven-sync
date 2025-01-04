@@ -20,15 +20,15 @@ jobs:
     - uses: 'hmarr/debug-action@cd1afbd7852b7ad7b1b7a9a1b03efebd3b0a1820' # v3.0.0
 
     # https://github.com/zgosalvez/github-actions-ensure-sha-pinned-actions
-    - uses: 'zgosalvez/github-actions-ensure-sha-pinned-actions@74606c30450304eee8660aae751818321754feb1' # v3.0.9
+    - uses: 'zgosalvez/github-actions-ensure-sha-pinned-actions@6ae615f6475d2ede5ad88bea6baa7a1d5e93ffaa' # v3.0.19
 
     # https://github.com/actions/checkout
     - name: 'checkout'
-      uses: 'actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332' # v4.1.7
+      uses: 'actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683' # v4.2.2
 
     # https://github.com/actions/setup-java
     - name: 'Set up JDK'
-      uses: 'actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9' # v4.2.1
+      uses: 'actions/setup-java@7a6d8a8234af8eb26422e24e3006232cccaa061b' # v4.6.0
       with:
         java-version: '21'
         distribution: 'temurin'
@@ -36,11 +36,11 @@ jobs:
 
     # https://github.com/gradle/actions/tree/main/setup-gradle
     - name: 'Set up Gradle'
-      uses: "gradle/actions/setup-gradle@cc4fc85e6b35bafd578d5ffbc76a5518407e1af0" # v4.2.1
+      uses: "gradle/actions/setup-gradle@0bdd871935719febd78681f197cd39af5b6e16a6" # v4.2.2
 
     # https://github.com/gradle/actions/tree/main/dependency-submission
     - name: "Generate and submit dependency graph"
-      uses: "gradle/actions/dependency-submission@cc4fc85e6b35bafd578d5ffbc76a5518407e1af0" # v4.2.1
+      uses: "gradle/actions/dependency-submission@0bdd871935719febd78681f197cd39af5b6e16a6" # v4.2.2
       with:
         cache-cleanup: 'never'
         build-scan-publish: false
