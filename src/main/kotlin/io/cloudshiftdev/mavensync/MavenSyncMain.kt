@@ -40,7 +40,7 @@ public suspend fun main(args: Array<String>) {
 private fun loadConfiguration(args: Array<String>): SyncConfig =
     try {
         val builder =
-            ConfigLoaderBuilder.default().allowEmptyConfigFiles().withExplicitSealedTypes()
+            ConfigLoaderBuilder.newBuilder().allowEmptyConfigFiles().withExplicitSealedTypes()
         builder.addPropertySource(
             CommandLinePropertySource(arguments = args, prefix = "--", delimiter = "=")
         )

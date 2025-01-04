@@ -15,6 +15,7 @@ application {
     mainClass = "io.cloudshiftdev.mavensync.MavenSyncMainKt"
 }
 
+// publish just the distZip artifact such that consumers can download and run the application
 val distConf = configurations.create("dist")
 
 val distArtifact = artifacts.add(distConf.name, tasks.named("distZip"))
