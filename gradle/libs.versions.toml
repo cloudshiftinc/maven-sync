@@ -7,7 +7,6 @@ vanniktech-publish = "0.30.0"
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktech-publish" }
 vanniktech-mavenPublishBase = { id = "com.vanniktech.maven.publish.base", version.ref = "vanniktech-publish" }
 ktfmt = { id = "com.ncorti.ktfmt.gradle", version = "0.21.0" }
 
