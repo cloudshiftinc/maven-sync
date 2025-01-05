@@ -28,8 +28,6 @@ bin/maven-sync <configuration files>
 
 `maven-sync` is primarily configured via a JSON file, with command-line and environment variable overrides available.
 
-The configuration file is a JSON object with two keys: `source` and `target`.
-
 A minimal configuration file, for repositories that do not require authentication, is shown below:
 
 ```json
