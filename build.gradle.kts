@@ -45,7 +45,7 @@ dependencies {
     implementation(libs.sksmauel.hoplite)
     implementation(libs.sksmauel.hoplite.json)
 
-    implementation("ch.qos.logback:logback-classic:1.5.15")
+    implementation("ch.qos.logback:logback-classic:1.5.16")
 }
 
 ktfmt {
