@@ -4,7 +4,7 @@
 cron job / scheduled task.
 
 Artifacts are synchronized incrementally; versions that exist in the _source_ repository are only mirrored to the
-_target_ repository of they do not already exist.
+_target_ repository if they do not already exist.
 
 # Be Considerate
 
