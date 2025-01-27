@@ -1,7 +1,7 @@
 # Reference: https://docs.gradle.org/current/userguide/platforms.html
 
 [versions]
-kotlin = "2.1.0"
+kotlin = "2.1.10"
 hoplite = "2.9.0"
 vanniktech-publish = "0.30.0"
 
