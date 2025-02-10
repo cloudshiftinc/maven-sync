@@ -8,12 +8,12 @@ vanniktech-publish = "0.30.0"
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 vanniktech-mavenPublishBase = { id = "com.vanniktech.maven.publish.base", version.ref = "vanniktech-publish" }
-ktfmt = { id = "com.ncorti.ktfmt.gradle", version = "0.21.0" }
+ktfmt = { id = "com.ncorti.ktfmt.gradle", version = "0.22.0" }
 
 
 [libraries]
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.10.1" }
-oshai-kotlinLogging = { module = "io.github.oshai:kotlin-logging-jvm", version = "7.0.3" }
+oshai-kotlinLogging = { module = "io.github.oshai:kotlin-logging-jvm", version = "7.0.4" }
 pearx-kasechange = { module = "net.pearx.kasechange:kasechange-jvm", version = "1.4.1" }
 guava = { module = "com.google.guava:guava", version = "33.4.0-jre" }
 
@@ -27,7 +27,7 @@ ktor-client-logging = { module = "io.ktor:ktor-client-logging" }
 sksmauel-hoplite = { module = "com.sksamuel.hoplite:hoplite-core", version.ref = "hoplite" }
 sksmauel-hoplite-json = { module = "com.sksamuel.hoplite:hoplite-json", version.ref = "hoplite" }
 
-ksoup-base = {module = "com.fleeksoft.ksoup:ksoup", version = "0.2.1" }
+ksoup-base = {module = "com.fleeksoft.ksoup:ksoup", version = "0.2.2" }
 
 ##### Testing libraries
 
