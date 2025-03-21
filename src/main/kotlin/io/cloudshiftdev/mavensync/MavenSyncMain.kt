@@ -112,12 +112,14 @@ private suspend fun handleArtifact(
                     config.transferSignatures,
                 )
 
-            // copy each asset to target
-            assets.forEach { asset -> sourceRepository.copyAsset(asset, targetRepository) }
+            if (assets.isNotEmpty()) {
+                // copy each asset to target
+                assets.forEach { asset -> sourceRepository.copyAsset(asset, targetRepository) }
 
-            targetRepository.releaseVersion(coordinates)
+                targetRepository.releaseVersion(coordinates)
 
-            delay(config.source.downloadDelay)
+                delay(config.source.downloadDelay)
+            }
         }
 }
 
