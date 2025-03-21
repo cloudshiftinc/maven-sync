@@ -64,6 +64,9 @@ internal class MavenHttpClient(logHttpHeaders: Boolean, credentials: BasicAuthCr
             // this happens if the maven metadata lists a version but that version isn't present
             logger.warn { "Unable to download $url: ${e.message}; skipping" }
             emptySequence()
+        } catch (e: ClientRequestException) {
+            logger.warn { "Unable to download $url: ${e.message}; skipping" }
+            emptySequence()
         }
     }
 
