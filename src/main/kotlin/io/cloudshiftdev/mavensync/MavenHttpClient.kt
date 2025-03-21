@@ -22,6 +22,7 @@ import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import javax.net.ssl.SSLContext
 import javax.net.ssl.X509TrustManager
+import sun.jvm.hotspot.HelloWorld.e
 
 private val logger = KotlinLogging.logger {}
 
@@ -49,16 +50,22 @@ internal class MavenHttpClient(logHttpHeaders: Boolean, credentials: BasicAuthCr
 
     internal suspend fun parseChildLinks(url: Url): Sequence<Url> {
         val baseUrl = url.toString()
-        return parseContent(url)
-            .body()
-            .select("a")
-            .asSequence()
-            .map { it.attr("abs:href") }
-            .filter {
-                // keep everything anchored to the base - don't wander elsewhere
-                it.startsWith(baseUrl)
-            }
-            .map(::Url)
+        return try {
+            parseContent(url)
+                .body()
+                .select("a")
+                .asSequence()
+                .map { it.attr("abs:href") }
+                .filter {
+                    // keep everything anchored to the base - don't wander elsewhere
+                    it.startsWith(baseUrl)
+                }
+                .map(::Url)
+        } catch (e: MissingContentException) {
+            // this happens if the maven metadata lists a version but that version isn't present
+            logger.warn { "Unable to download $url: ${e.message}; skipping" }
+            emptySequence()
+        }
     }
 
     private val parserMap =
