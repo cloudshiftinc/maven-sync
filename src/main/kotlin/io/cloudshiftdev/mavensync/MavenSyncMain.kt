@@ -97,6 +97,10 @@ private suspend fun handleArtifact(
     val sourceVersions = metadata.artifactVersions.toSet()
     val targetVersions = targetMetadata.artifactVersions.toSet()
     val missingVersions = sourceVersions - targetVersions
+    if (missingVersions.isEmpty())
+        return.also {
+            logger.debug { "No missing versions for ${metadata.group}:${metadata.artifact}" }
+        }
     logger.info {
         "Syncing missing versions for ${metadata.group}:${metadata.artifact}: $missingVersions"
     }
