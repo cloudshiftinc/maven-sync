@@ -8,6 +8,10 @@ internal data class ArtifactMetadata(
 
 @JvmInline
 internal value class Group(val value: String) {
+    init {
+        require(value.isNotBlank()) { "Group cannot be blank" }
+        require(!value.startsWith(".")) { "Group cannot start with a dot: $value" }
+    }
 
     override fun toString(): String = value
 }

@@ -8,6 +8,7 @@ import java.nio.file.Path
 import kotlin.time.Duration
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.delay
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 
 private val logger = KotlinLogging.logger {}
 
@@ -82,13 +83,6 @@ private class DefaultMavenHttpRepository(
         }
     }
 
-    private fun String.normalizeUrlPath(): String {
-        return when {
-            endsWith('/') -> this
-            else -> "$this/"
-        }
-    }
-
     override suspend fun queryArtifactMetadata(group: Group, artifact: Artifact): ArtifactMetadata {
         return readPossibleArtifactMetadata(metadataUrl(group, artifact))
             ?: ArtifactMetadata(group = group, artifact = artifact, artifactVersions = emptyList())
@@ -160,32 +154,53 @@ private class DefaultMavenHttpRepository(
         crawlDelay: Duration,
     ) {
         logger.info { "Reading index: $url" }
-        val recurseDirs = mutableListOf<Url>()
+        val childLinks = mavenHttpClient.parseChildLinks(url).toList()
 
-        mavenHttpClient.parseChildLinks(url).forEach {
-            when {
-                it.isDirectory -> recurseDirs.add(it)
-                it.filename.value == MavenSpec.MavenMetadataXmlFile -> {
-                    readPossibleArtifactMetadata(it)?.let {
-                        channel.send(it)
-                        return@crawlDirectoryListings
-                    }
-                }
-                it.filename.isPom -> {
-                    logger.warn { "Missing maven-metadata.xml for: $it" }
-                    return@crawlDirectoryListings
-                }
-                it.filename.isChecksum -> logger.debug { "Ignoring checksum: $it" }
-                it.filename.isSignature -> logger.debug { "Ignoring signature: $it" }
-                it.filename.value in MavenSpec.IgnoredFiles -> logger.debug { "Ignoring: $it" }
-                else ->
-                    logger.warn {
-                        "Ignoring unknown artifact (likely missing maven-metadata.xml): $it"
-                    }
+        logger.debug { "Found ${childLinks.size} links in $url" }
+
+        val mavenMetadata =
+            childLinks
+                .firstOrNull { it.filename.value == MavenSpec.MavenMetadataXmlFile }
+                ?.let { readPossibleArtifactMetadata(it) }
+
+        // if there is a maven-metadata.xml in this directory, process it (when it represents
+        // versions)
+        if (mavenMetadata != null && mavenMetadata.artifactVersions.isNotEmpty()) {
+            logger.debug { "Found maven-metadata.xml in: $url" }
+            channel.send(mavenMetadata)
+            return
+        }
+
+        val dirs = childLinks.filter { it.isDirectory }
+        logger.debug { "Found ${dirs.size} directories in $url" }
+
+        // no maven-metadata; check if all directories are versions
+        if (dirs.isNotEmpty()) {
+            val versions = dirs.mapNotNull { artifactVersion(it.directoryName) }.sorted()
+            if (versions.size == dirs.size) {
+                logger.warn { "Missing maven-metadata.xml; synthesizing from versions: $url" }
+                // list of versions (no maven-metadata.xml); create metadata
+                val relativeUrl =
+                    url.segments
+                        .joinToString("/")
+                        .removePrefix(repoUrl.segments.joinToString("/"))
+                        .removeSuffix("/")
+                val artifact = relativeUrl.substringAfterLast("/")
+                val group = relativeUrl.substringBeforeLast("/").removePrefix("/").replace("/", ".")
+                val artifactMetadata =
+                    ArtifactMetadata(
+                        group = Group(group),
+                        artifact = Artifact(artifact),
+                        artifactVersions = versions.map { ArtifactVersion(it.toString()) },
+                    )
+                logger.debug { "Synthesized metadata: $artifactMetadata" }
+                channel.send(artifactMetadata)
+                return
             }
         }
 
-        recurseDirs.forEach {
+        // no maven-metadata.xml; recurse into directories
+        dirs.forEach {
             delay(crawlDelay)
             crawlDirectoryListings(it, channel, crawlDelay)
         }
@@ -214,6 +229,9 @@ private class DefaultMavenHttpRepository(
 
     private val Url.isDirectory: Boolean
         get() = encodedPath.endsWith("/")
+
+    private val Url.directoryName: String
+        get() = encodedPath.removeSuffix("/").substringAfterLast("/")
 
     private val Url.filename: Filename
         get() = Filename(encodedPath.substringAfterLast("/"))
@@ -286,5 +304,15 @@ private data class MavenMetadataXml(
             append("  </versioning>\n")
             append("</metadata>\n")
         }
+    }
+}
+
+internal fun artifactVersion(
+    version: String
+): org.apache.maven.artifact.versioning.ArtifactVersion? {
+    val parsedVersion = DefaultArtifactVersion(version)
+    return when {
+        parsedVersion.qualifier == version -> null
+        else -> parsedVersion
     }
 }
