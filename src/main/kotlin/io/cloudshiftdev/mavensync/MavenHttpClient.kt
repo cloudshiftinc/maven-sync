@@ -52,82 +52,36 @@ internal class MavenHttpClient(logHttpHeaders: Boolean, credentials: BasicAuthCr
         logger.info { "Uploaded $url: ${resp.status}" }
     }
 
-    fun <T> List<T>.groupPairs(): List<Pair<T, T>> {
-        return this.windowed(size = 2, step = 2, partialWindows = false) { it[0] to it[1] }
-    }
-
     internal suspend fun parseChildLinks(url: Url): List<Url> {
         val baseUrl = url.toString()
         return try {
-            parseContent(url)
-                .body()
-                .select("pre#contents")
-                .single()
-                .childNodes()
-                .groupPairs()
-                .mapNotNull { (linkElement, textElement) ->
-                    require(linkElement is Element) {
-                        "Expected link element, got ${linkElement::class.simpleName}"
-                    }
-                    require(textElement is TextNode) {
-                        "Expected text element, got ${textElement::class.simpleName}"
-                    }
-
-                    val linkUrl = linkElement.attr("abs:href")
-                    // keep everything anchored to the base - don't wander elsewhere
-                    if (!linkUrl.startsWith(baseUrl)) return@mapNotNull null
-
-                    val text = textElement.text().trim()
-                    val pieces = text.split(" ")
-                    require(pieces.size == 3) {
-                        "Expected at least 3 pieces, got ${pieces.size} in $text"
-                    }
-                    val size = pieces[2].toLongOrNull()
-
-                    // not all directory listings have '/' suffix for directories; infer from the
-                    // size
-                    when {
-                        size == null -> Url(linkUrl.normalizeUrlPath())
-                        else -> Url(linkUrl)
-                    }
+            parseContent(url).body().select("pre").single().childNodes().groupPairs().mapNotNull {
+                (linkElement, textElement) ->
+                require(linkElement is Element) {
+                    "Expected link element, got ${linkElement::class.simpleName}"
+                }
+                require(textElement is TextNode) {
+                    "Expected text element, got ${textElement::class.simpleName}"
                 }
 
-            //            val x = parseContent(url)
-            //                .body()
-            //                .select("pre#contents")
-            //                .single()
-            //                .childNodes()
-            //                .asSequence()
-            //                .zipWithNext()
-            //                .mapNotNull { (linkElement, textElement) ->
-            //                    require(linkElement is Element) {
-            //                        "Expected link element, got ${linkElement::class.simpleName}"
-            //                    }
-            //                    require(textElement is TextNode) {
-            //                        "Expected text element, got ${textElement::class.simpleName}"
-            //                    }
-            //
-            //                    val url = linkElement.attr("abs:href")
-            //                    // keep everything anchored to the base - don't wander elsewhere
-            //                    if(!url.startsWith(baseUrl)) return@mapNotNull null
-            //
-            //                    val text = textElement.text()
-            //                    println("$url $text")
-            //                }.toList()
-            //
-            //            println(x)
-            //            parseContent(url)
-            //                .body()
-            //                .select("pre#contents a")
-            //                .asSequence()
-            //                .mapNotNull {element ->
-            //                    val url = element.attr("abs:href")
-            //
-            //                    // keep everything anchored to the base - don't wander elsewhere
-            //                    if(!url.startsWith(baseUrl)) return@mapNotNull null
-            //
-            //                    Url(url)
-            //                }
+                val linkUrl = linkElement.attr("abs:href")
+                // keep everything anchored to the base - don't wander elsewhere
+                if (!linkUrl.startsWith(baseUrl)) return@mapNotNull null
+
+                val text = textElement.text().trim()
+                val pieces = text.split(" ")
+                require(pieces.size == 3) {
+                    "Expected at least 3 pieces, got ${pieces.size} in $text"
+                }
+                val size = pieces[2].toLongOrNull()
+
+                // not all directory listings have '/' suffix for directories; infer from the
+                // size
+                when {
+                    size == null -> Url(linkUrl.normalizeUrlPath())
+                    else -> Url(linkUrl)
+                }
+            }
         } catch (e: MissingContentException) {
             // this happens if the maven metadata lists a version but that version isn't present
             logger.warn { "Unable to download $url: ${e.message}; skipping" }

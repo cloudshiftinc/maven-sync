@@ -11,3 +11,7 @@ internal fun String.normalizeUrlPath(): String {
         else -> "$this/"
     }
 }
+
+internal fun <T> List<T>.groupPairs(): List<Pair<T, T>> {
+    return this.windowed(size = 2, step = 2, partialWindows = false) { it[0] to it[1] }
+}
