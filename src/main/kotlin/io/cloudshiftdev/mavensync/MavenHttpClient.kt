@@ -1,8 +1,6 @@
 package io.cloudshiftdev.mavensync
 
 import com.fleeksoft.ksoup.nodes.Document
-import com.fleeksoft.ksoup.nodes.Element
-import com.fleeksoft.ksoup.nodes.TextNode
 import com.fleeksoft.ksoup.parser.Parser
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
@@ -15,10 +13,7 @@ import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
-import io.ktor.http.Url
-import io.ktor.http.contentType
+import io.ktor.http.*
 import io.ktor.util.cio.*
 import io.ktor.utils.io.*
 import io.ktor.utils.io.charsets.*
@@ -33,6 +28,7 @@ private val logger = KotlinLogging.logger {}
 internal class MavenHttpClient(logHttpHeaders: Boolean, credentials: BasicAuthCredentials?) :
     AutoCloseable {
     private val httpClient = HttpClientFactory.create(logHttpHeaders, credentials)
+    private val directoryListingParser = DirectoryListingParser.create()
 
     override fun close() {
         httpClient.close()
@@ -52,44 +48,20 @@ internal class MavenHttpClient(logHttpHeaders: Boolean, credentials: BasicAuthCr
         logger.info { "Uploaded $url: ${resp.status}" }
     }
 
-    internal suspend fun parseChildLinks(url: Url): List<Url> {
-        val baseUrl = url.toString()
-        return try {
-            parseContent(url).body().select("pre").single().childNodes().groupPairs().mapNotNull {
-                (linkElement, textElement) ->
-                require(linkElement is Element) {
-                    "Expected link element, got ${linkElement::class.simpleName}"
-                }
-                require(textElement is TextNode) {
-                    "Expected text element, got ${textElement::class.simpleName}"
-                }
-
-                val linkUrl = linkElement.attr("abs:href")
-                // keep everything anchored to the base - don't wander elsewhere
-                if (!linkUrl.startsWith(baseUrl)) return@mapNotNull null
-
-                val text = textElement.text().trim()
-                val pieces = text.split(" ")
-                require(pieces.size == 3) {
-                    "Expected at least 3 pieces, got ${pieces.size} in $text"
-                }
-                val size = pieces[2].toLongOrNull()
-
-                // not all directory listings have '/' suffix for directories; infer from the
-                // size
-                when {
-                    size == null -> Url(linkUrl.normalizeUrlPath())
-                    else -> Url(linkUrl)
-                }
+    internal suspend fun parseDirectoryListing(url: Url): List<Url> {
+        val document =
+            try {
+                parseContent(url)
+            } catch (e: MissingContentException) {
+                // this happens if the maven metadata lists a version but that version isn't present
+                logger.warn { "Unable to download $url: ${e.message}; skipping" }
+                return emptyList()
+            } catch (e: ClientRequestException) {
+                logger.warn { "Unable to download $url: ${e.message}; skipping" }
+                return emptyList()
             }
-        } catch (e: MissingContentException) {
-            // this happens if the maven metadata lists a version but that version isn't present
-            logger.warn { "Unable to download $url: ${e.message}; skipping" }
-            emptyList()
-        } catch (e: ClientRequestException) {
-            logger.warn { "Unable to download $url: ${e.message}; skipping" }
-            emptyList()
-        }
+
+        return directoryListingParser.parse(url, document)
     }
 
     private val parserMap =
@@ -242,6 +214,7 @@ private object HttpClientFactory {
                                         exception.response,
                                         exception.message,
                                     )
+
                                 409 ->
                                     throw ConflictException(exception.response, exception.message)
                             }

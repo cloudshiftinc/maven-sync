@@ -97,7 +97,7 @@ private class DefaultMavenHttpRepository(
         val url = url(coordinates)
         logger.debug { "Listing assets for: $coordinates @ $url" }
         return mavenHttpClient
-            .parseChildLinks(url)
+            .parseDirectoryListing(url)
             .filter { !it.isDirectory }
             .map { it.filename }
             .filter {
@@ -154,7 +154,7 @@ private class DefaultMavenHttpRepository(
         crawlDelay: Duration,
     ) {
         logger.info { "Reading index: $url" }
-        val childLinks = mavenHttpClient.parseChildLinks(url).toList()
+        val childLinks = mavenHttpClient.parseDirectoryListing(url)
 
         logger.debug { "Found ${childLinks.size} links in $url" }
 
