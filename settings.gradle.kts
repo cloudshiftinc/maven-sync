@@ -42,4 +42,3 @@ develocity {
         termsOfUseAgree = "yes"
     }
 }
-

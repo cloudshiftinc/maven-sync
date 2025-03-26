@@ -11,22 +11,14 @@ plugins {
     application
 }
 
-application {
-    mainClass = "io.cloudshiftdev.mavensync.MavenSyncMainKt"
-}
+application { mainClass = "io.cloudshiftdev.mavensync.MavenSyncMainKt" }
 
 // publish just the distZip artifact such that consumers can download and run the application
 val distConf = configurations.create("dist")
 
 val distArtifact = artifacts.add(distConf.name, tasks.named("distZip"))
 
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifact(distArtifact)
-        }
-    }
-}
+publishing { publications { create<MavenPublication>("maven") { artifact(distArtifact) } } }
 
 dependencies {
     implementation(libs.ksoup.base)
@@ -49,13 +41,9 @@ dependencies {
     implementation("org.apache.maven:maven-artifact:3.9.9")
 }
 
-ktfmt {
-    kotlinLangStyle()
-}
+ktfmt { kotlinLangStyle() }
 
-java {
-    consistentResolution { useCompileClasspathVersions() }
-}
+java { consistentResolution { useCompileClasspathVersions() } }
 
 tasks.withType<AbstractArchiveTask>().configureEach {
     isPreserveFileTimestamps = false
@@ -96,56 +84,53 @@ mavenPublishing {
             url = "https://github.com/cloudshiftinc/maven-sync"
         }
     }
-
 }
 
 testing {
     suites {
-        val test by getting(JvmTestSuite::class) {
-            useJUnitJupiter()
-            dependencies {
-                implementation(platform(libs.kotest.bom))
-                implementation(libs.kotest.assertions.core)
-                implementation(libs.kotest.runner.junit5)
-            }
-            targets {
-                all {
-                    testTask.configure {
-                        outputs.upToDateWhen { false }
-                        testLogging {
-                            events =
-                                setOf(
-                                    TestLogEvent.FAILED,
-                                    TestLogEvent.PASSED,
-                                    TestLogEvent.SKIPPED,
-                                    TestLogEvent.STANDARD_OUT,
-                                    TestLogEvent.STANDARD_ERROR
-                                )
-                            exceptionFormat = TestExceptionFormat.FULL
-                            showExceptions = true
-                            showCauses = true
-                            showStackTraces = true
+        val test by
+            getting(JvmTestSuite::class) {
+                useJUnitJupiter()
+                dependencies {
+                    implementation(platform(libs.kotest.bom))
+                    implementation(libs.kotest.assertions.core)
+                    implementation(libs.kotest.runner.junit5)
+                }
+                targets {
+                    all {
+                        testTask.configure {
+                            outputs.upToDateWhen { false }
+                            testLogging {
+                                events =
+                                    setOf(
+                                        TestLogEvent.FAILED,
+                                        TestLogEvent.PASSED,
+                                        TestLogEvent.SKIPPED,
+                                        TestLogEvent.STANDARD_OUT,
+                                        TestLogEvent.STANDARD_ERROR,
+                                    )
+                                exceptionFormat = TestExceptionFormat.FULL
+                                showExceptions = true
+                                showCauses = true
+                                showStackTraces = true
+                            }
                         }
                     }
                 }
             }
-        }
     }
 }
 
 val ciBuild = System.getenv("CI") != null
 
-val precommit = tasks.register("precommit") {
-    group = "verification"
-    dependsOn("check", "ktfmtFormat")
-}
+val precommit =
+    tasks.register("precommit") {
+        group = "verification"
+        dependsOn("check", "ktfmtFormat")
+    }
 
 // only check formatting for CI builds
-tasks.withType<KtfmtCheckTask>().configureEach {
-    enabled = ciBuild
-}
+tasks.withType<KtfmtCheckTask>().configureEach { enabled = ciBuild }
 
 // always format for non-CI builds
-tasks.withType<KtfmtFormatTask>().configureEach {
-    enabled = !ciBuild
-}
+tasks.withType<KtfmtFormatTask>().configureEach { enabled = !ciBuild }
