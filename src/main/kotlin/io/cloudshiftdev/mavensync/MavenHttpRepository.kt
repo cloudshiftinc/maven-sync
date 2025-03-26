@@ -216,7 +216,8 @@ private class DefaultMavenHttpRepository(
 
         val groupId = doc.select("groupId").firstOrNull()
         val artifactId = doc.select("artifactId").firstOrNull()
-        val artifactVersions = doc.select("version").map { ArtifactVersion(it.text()) }
+        val artifactVersions =
+            doc.select("version").map { ArtifactVersion(it.text()) }.filterNot { it.isSnapshot }
 
         val artifactMetadata =
             ArtifactMetadata(
