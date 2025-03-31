@@ -13,11 +13,11 @@ ktfmt = { id = "com.ncorti.ktfmt.gradle", version = "0.22.0" }
 
 [libraries]
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.10.1" }
-oshai-kotlinLogging = { module = "io.github.oshai:kotlin-logging-jvm", version = "7.0.5" }
+oshai-kotlinLogging = { module = "io.github.oshai:kotlin-logging-jvm", version = "7.0.6" }
 pearx-kasechange = { module = "net.pearx.kasechange:kasechange-jvm", version = "1.4.1" }
 guava = { module = "com.google.guava:guava", version = "33.4.6-jre" }
 
-ktor-bom = { module = "io.ktor:ktor-bom", version = "3.1.1" }
+ktor-bom = { module = "io.ktor:ktor-bom", version = "3.1.2" }
 
 ktor-client-core = { module = "io.ktor:ktor-client-core" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp" }
