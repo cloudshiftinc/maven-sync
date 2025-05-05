@@ -12,12 +12,12 @@ ktfmt = { id = "com.ncorti.ktfmt.gradle", version = "0.22.0" }
 
 
 [libraries]
-kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.10.1" }
-oshai-kotlinLogging = { module = "io.github.oshai:kotlin-logging-jvm", version = "7.0.6" }
+kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.10.2" }
+oshai-kotlinLogging = { module = "io.github.oshai:kotlin-logging-jvm", version = "7.0.7" }
 pearx-kasechange = { module = "net.pearx.kasechange:kasechange-jvm", version = "1.4.1" }
-guava = { module = "com.google.guava:guava", version = "33.4.6-jre" }
+guava = { module = "com.google.guava:guava", version = "33.4.8-jre" }
 
-ktor-bom = { module = "io.ktor:ktor-bom", version = "3.1.2" }
+ktor-bom = { module = "io.ktor:ktor-bom", version = "3.1.3" }
 
 ktor-client-core = { module = "io.ktor:ktor-client-core" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp" }
@@ -27,7 +27,7 @@ ktor-client-logging = { module = "io.ktor:ktor-client-logging" }
 sksmauel-hoplite = { module = "com.sksamuel.hoplite:hoplite-core", version.ref = "hoplite" }
 sksmauel-hoplite-json = { module = "com.sksamuel.hoplite:hoplite-json", version.ref = "hoplite" }
 
-ksoup-base = {module = "com.fleeksoft.ksoup:ksoup", version = "0.2.2" }
+ksoup-base = {module = "com.fleeksoft.ksoup:ksoup", version = "0.2.3" }
 
 ##### Testing libraries
 
