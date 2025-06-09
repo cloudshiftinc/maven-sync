@@ -27,7 +27,7 @@ ktor-client-logging = { module = "io.ktor:ktor-client-logging" }
 sksmauel-hoplite = { module = "com.sksamuel.hoplite:hoplite-core", version.ref = "hoplite" }
 sksmauel-hoplite-json = { module = "com.sksamuel.hoplite:hoplite-json", version.ref = "hoplite" }
 
-ksoup-base = {module = "com.fleeksoft.ksoup:ksoup", version = "0.2.3" }
+ksoup-base = {module = "com.fleeksoft.ksoup:ksoup", version = "0.2.4" }
 
 ##### Testing libraries
 
