@@ -141,7 +141,7 @@ internal data class SyncReport(val totalDuration: Duration, val artifacts: List<
     }
 }
 
-private fun formatBytes(bytes: Long): String {
+internal fun formatBytes(bytes: Long): String {
     if (bytes < 1024) return "$bytes B"
     val units = listOf("KB", "MB", "GB", "TB")
     var value = bytes.toDouble() / 1024.0
