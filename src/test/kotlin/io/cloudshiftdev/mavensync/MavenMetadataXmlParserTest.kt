@@ -24,7 +24,8 @@ class MavenMetadataXmlParserTest :
                         </versions>
                       </versioning>
                     </metadata>
-                    """.trimIndent()
+                    """
+                        .trimIndent()
                 )
 
             val md = MavenMetadataXmlParser.parse(doc)
@@ -48,7 +49,8 @@ class MavenMetadataXmlParserTest :
                         </versions>
                       </versioning>
                     </metadata>
-                    """.trimIndent()
+                    """
+                        .trimIndent()
                 )
 
             MavenMetadataXmlParser.parse(doc).artifactVersions shouldBe
@@ -62,7 +64,8 @@ class MavenMetadataXmlParserTest :
                     <metadata>
                       <artifactId>foo</artifactId>
                     </metadata>
-                    """.trimIndent()
+                    """
+                        .trimIndent()
                 )
 
             shouldThrow<IllegalStateException> { MavenMetadataXmlParser.parse(doc) }
@@ -75,7 +78,8 @@ class MavenMetadataXmlParserTest :
                     <metadata>
                       <groupId>com.example</groupId>
                     </metadata>
-                    """.trimIndent()
+                    """
+                        .trimIndent()
                 )
 
             shouldThrow<IllegalStateException> { MavenMetadataXmlParser.parse(doc) }
@@ -89,7 +93,8 @@ class MavenMetadataXmlParserTest :
                       <groupId>com.example</groupId>
                       <artifactId>foo</artifactId>
                     </metadata>
-                    """.trimIndent()
+                    """
+                        .trimIndent()
                 )
 
             MavenMetadataXmlParser.parse(doc).artifactVersions shouldBe emptyList()

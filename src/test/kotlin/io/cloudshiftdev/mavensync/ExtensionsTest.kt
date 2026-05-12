@@ -8,7 +8,8 @@ class ExtensionsTest :
     FunSpec({
         context("Url.filename") {
             test("returns last path segment") {
-                Url("https://repo.example.com/a/b/foo-1.0.jar").filename shouldBe Filename("foo-1.0.jar")
+                Url("https://repo.example.com/a/b/foo-1.0.jar").filename shouldBe
+                    Filename("foo-1.0.jar")
             }
 
             test("returns empty Filename for directory-style URL") {
@@ -28,11 +29,13 @@ class ExtensionsTest :
 
         context("String.normalizeUrlPath") {
             test("appends trailing slash when missing") {
-                "https://repo.example.com/a/b".normalizeUrlPath() shouldBe "https://repo.example.com/a/b/"
+                "https://repo.example.com/a/b".normalizeUrlPath() shouldBe
+                    "https://repo.example.com/a/b/"
             }
 
             test("leaves trailing slash alone when present") {
-                "https://repo.example.com/a/b/".normalizeUrlPath() shouldBe "https://repo.example.com/a/b/"
+                "https://repo.example.com/a/b/".normalizeUrlPath() shouldBe
+                    "https://repo.example.com/a/b/"
             }
         }
 

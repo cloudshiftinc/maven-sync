@@ -35,7 +35,8 @@ class MavenMetadataXmlTest :
                 |    <lastUpdated>20240315083045</lastUpdated>
                 |  </versioning>
                 |</metadata>
-                |""".trimMargin()
+                |"""
+                    .trimMargin()
         }
 
         test("emits empty <versions> block when no versions") {
