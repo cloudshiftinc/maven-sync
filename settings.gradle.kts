@@ -22,7 +22,10 @@ pluginManagement {
     require(JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21)) {
         "This build requires Gradle to be run with at least Java 21"
     }
-    repositories { gradlePluginPortal() }
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
 }
 
 plugins {

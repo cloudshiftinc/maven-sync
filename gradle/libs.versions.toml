@@ -1,14 +1,14 @@
 # Reference: https://docs.gradle.org/current/userguide/platforms.html
 
 [versions]
-kotlin = "2.1.21"
+kotlin = "2.3.21"
 hoplite = "2.9.0"
 vanniktech-publish = "0.32.0"
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 vanniktech-mavenPublishBase = { id = "com.vanniktech.maven.publish.base", version.ref = "vanniktech-publish" }
-ktfmt = { id = "com.ncorti.ktfmt.gradle", version = "0.22.0" }
+ktfmt = { id = "com.ncorti.ktfmt.gradle", version = "0.26.0" }
 
 
 [libraries]
@@ -31,6 +31,6 @@ ksoup-base = {module = "com.fleeksoft.ksoup:ksoup", version = "0.2.4" }
 
 ##### Testing libraries
 
-kotest-bom = { module = "io.kotest:kotest-bom", version = "5.9.1" }
+kotest-bom = { module = "io.kotest:kotest-bom", version = "6.1.11" }
 kotest-assertions-core = { module = "io.kotest:kotest-assertions-core" }
 kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5" }
