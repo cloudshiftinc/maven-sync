@@ -120,3 +120,45 @@ This can be combined with this AWS CLI command to obtain a CodeArtifact authenti
 ```shell
  export CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain <domain> --domain-owner <owner> --query authorizationToken --output text`
 ```
+
+# Integration tests
+
+`MavenSyncIntegrationTest` exercises everything `maven-sync` does against a source repository — crawl, parse directory listings and `maven-metadata.xml`, target-diff, and per-version asset listing — *up to but excluding* any upload to the target. Nothing is written to the target repo (the target is faked with an empty in-memory stand-in, so every source version appears "missing" and the per-version asset listing runs for all of them).
+
+The test is gated on the `MAVEN_SYNC_IT_CONFIG` environment variable. When unset, the test is skipped and a regular `./gradlew test` does no network IO.
+
+To run it:
+
+```shell
+export MAVEN_SYNC_IT_CONFIG=$PWD/local-it.json   # any path outside the repo, or under a gitignored dir
+./gradlew test --tests 'io.cloudshiftdev.mavensync.MavenSyncIntegrationTest'
+```
+
+The config file uses the standard configuration schema layered over the defaults. The `target` block is required by the schema but its `url` is **not contacted** — any placeholder is fine:
+
+```json
+{
+  "source": {
+    "url": "https://my.repo.com/maven",
+    "credentials": {
+      "username": "${{ env:MY_REPO_USER }}",
+      "password": "${{ env:MY_REPO_PASS }}"
+    },
+    "paths": ["com/example/some-group"]
+  },
+  "target": {
+    "url": "https://unused.invalid/"
+  }
+}
+```
+
+When the test runs it writes a deterministic JSON report to `build/reports/maven-sync-it/discovery-report.json` listing every discovered `group:artifact` → `version` → asset filenames. The test asserts that at least one artifact was found, every artifact has at least one version, and every version has at least one asset.
+
+To lock the result in as a regression snapshot, copy the report to a stable location and set `MAVEN_SYNC_IT_EXPECTED` to its path:
+
+```shell
+cp build/reports/maven-sync-it/discovery-report.json ./my-source.expected.json
+export MAVEN_SYNC_IT_EXPECTED=$PWD/my-source.expected.json
+./gradlew test --tests 'io.cloudshiftdev.mavensync.MavenSyncIntegrationTest'
+```
+
