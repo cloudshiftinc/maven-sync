@@ -129,8 +129,10 @@ val ciBuild = System.getenv("CI") != null
 val precommit =
     tasks.register("precommit") {
         group = "verification"
-        dependsOn("check", "ktfmtFormat")
+        dependsOn("ktfmtFormat", "check")
     }
+
+tasks.named("check") { mustRunAfter("ktfmtFormat") }
 
 // only check formatting for CI builds
 tasks.withType<KtfmtCheckTask>().configureEach { enabled = ciBuild }
