@@ -25,7 +25,11 @@ public suspend fun main(args: Array<String>) {
 
     val config = loadConfiguration(args)
 
-    logger.info { "Effective configuration: $config" }
+    logger.info {
+        "Starting maven-sync: source=${config.source.url} target=${config.target.url} " +
+            "paths=${config.source.paths} concurrency=${config.artifactConcurrency}"
+    }
+    logger.debug { "Effective configuration: $config" }
 
     val metrics = SyncMetrics()
     try {
@@ -34,6 +38,7 @@ public suspend fun main(args: Array<String>) {
                 MavenSyncEngine(source, target, config.toSyncOptions(), metrics).sync()
             }
         }
+        logger.info { "Sync complete" }
     } finally {
         val report = metrics.snapshot()
         logger.info { "\n" + report.renderDetailed() }

@@ -39,6 +39,13 @@ internal class MavenSyncEngine(
         metrics.recordInSync(metadata.group, metadata.artifact, inSyncVersions)
 
         val missingVersions = sourceVersions - targetVersions
+        logger.info {
+            "Discovered ${metadata.group}:${metadata.artifact} — ${sourceVersions.size} versions" +
+                " in source, ${inSyncVersions.size} in sync, ${missingVersions.size} to sync"
+        }
+        inSyncVersions.forEach { version ->
+            logger.info { "In sync ${metadata.group}:${metadata.artifact}:${version.value}" }
+        }
         if (missingVersions.isEmpty()) {
             logger.debug { "No missing versions for ${metadata.group}:${metadata.artifact}" }
             return
@@ -46,12 +53,24 @@ internal class MavenSyncEngine(
         logger.info {
             "Syncing missing versions for ${metadata.group}:${metadata.artifact}: $missingVersions"
         }
+        var synced = 0
+        var failed = 0
         missingVersions
             .map { Coordinates(metadata.group, metadata.artifact, it) }
-            .forEach { coordinates -> syncVersion(coordinates) }
+            .forEach { coordinates ->
+                when (syncVersion(coordinates)) {
+                    VersionOutcome.Synced -> synced++
+                    VersionOutcome.Failed -> failed++
+                    VersionOutcome.NoAssets -> Unit
+                }
+            }
+        logger.info {
+            "Completed ${metadata.group}:${metadata.artifact} —" +
+                " inSync=${inSyncVersions.size} synced=$synced failed=$failed"
+        }
     }
 
-    private suspend fun syncVersion(coordinates: Coordinates) {
+    private suspend fun syncVersion(coordinates: Coordinates): VersionOutcome {
         val mark = TimeSource.Monotonic.markNow()
         try {
             val assets =
@@ -61,25 +80,37 @@ internal class MavenSyncEngine(
                     options.transferSignatures,
                 )
 
-            if (assets.isEmpty()) return
+            if (assets.isEmpty()) return VersionOutcome.NoAssets
 
             var bytes = 0L
             assets.forEach { asset -> bytes += source.copyAsset(asset, target) }
             target.releaseVersion(coordinates)
+            val duration = mark.elapsedNow()
             metrics.recordSynced(
                 coordinates = coordinates,
                 assetCount = assets.size,
                 bytes = bytes,
-                duration = mark.elapsedNow(),
+                duration = duration,
             )
+            logger.info {
+                "Synced $coordinates — ${assets.size} assets, ${formatBytes(bytes)} in $duration"
+            }
 
             delay(options.downloadDelay)
+            return VersionOutcome.Synced
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             val msg = e.message ?: e.toString()
             logger.error(e) { "Failed to sync $coordinates: $msg" }
             metrics.recordFailure(coordinates, msg, mark.elapsedNow())
+            return VersionOutcome.Failed
         }
+    }
+
+    private enum class VersionOutcome {
+        Synced,
+        Failed,
+        NoAssets,
     }
 }

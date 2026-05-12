@@ -18,9 +18,9 @@ import java.util.TreeMap
 
 /**
  * Source-side integration test. Drives a real `MavenHttpRepository` against a user-supplied repo
- * URL (and optional credentials) and runs everything the sync engine does *up to but excluding*
- * the upload to the target: crawl, parse, target-diff (against an empty fake), and per-version
- * asset listing.
+ * URL (and optional credentials) and runs everything the sync engine does *up to but excluding* the
+ * upload to the target: crawl, parse, target-diff (against an empty fake), and per-version asset
+ * listing.
  *
  * Gated on the `MAVEN_SYNC_IT_CONFIG` env var (path to a JSON file using the standard [SyncConfig]
  * schema). When unset, the test is reported as disabled and no network calls are made.
@@ -33,40 +33,40 @@ class MavenSyncIntegrationTest :
         val configPath = System.getenv("MAVEN_SYNC_IT_CONFIG")
         val enabled = !configPath.isNullOrBlank()
 
-        test("discovers artifacts, versions, and assets from a real source repo")
-            .config(enabled = enabled) {
-                val config = loadIntegrationConfig(File(configPath!!))
-                val options = config.toSyncOptions()
+        test("discovers artifacts, versions, and assets from a real source repo").config(
+            enabled = enabled
+        ) {
+            val config = loadIntegrationConfig(File(configPath!!))
+            val options = config.toSyncOptions()
 
-                config.source.toMavenHttpRepository().use { source ->
-                    val target = FakeMavenHttpRepository("integration-test-target")
-                    val report = DiscoveryReport()
+            config.source.toMavenHttpRepository().use { source ->
+                val target = FakeMavenHttpRepository("integration-test-target")
+                val report = DiscoveryReport()
 
-                    source.crawl(options.paths, options.crawlDelay).collect { metadata ->
-                        val targetMetadata =
-                            target.queryArtifactMetadata(metadata.group, metadata.artifact)
-                        val missingVersions =
-                            metadata.artifactVersions.toSet() -
-                                targetMetadata.artifactVersions.toSet()
-                        missingVersions.forEach { version ->
-                            val coordinates = Coordinates(metadata.group, metadata.artifact, version)
-                            val assets =
-                                source.listArtifactVersionAssets(
-                                    coordinates,
-                                    options.transferChecksums,
-                                    options.transferSignatures,
-                                )
-                            report.add(coordinates, assets)
-                        }
+                source.crawl(options.paths, options.crawlDelay).collect { metadata ->
+                    val targetMetadata =
+                        target.queryArtifactMetadata(metadata.group, metadata.artifact)
+                    val missingVersions =
+                        metadata.artifactVersions.toSet() - targetMetadata.artifactVersions.toSet()
+                    missingVersions.forEach { version ->
+                        val coordinates = Coordinates(metadata.group, metadata.artifact, version)
+                        val assets =
+                            source.listArtifactVersionAssets(
+                                coordinates,
+                                options.transferChecksums,
+                                options.transferSignatures,
+                            )
+                        report.add(coordinates, assets)
                     }
+                }
 
-                    target.copyCalls.shouldBeEmpty()
-                    target.uploadCalls.shouldBeEmpty()
-                    target.releaseCalls.shouldBeEmpty()
+                target.copyCalls.shouldBeEmpty()
+                target.uploadCalls.shouldBeEmpty()
+                target.releaseCalls.shouldBeEmpty()
 
-                    val reportPath = writeReport(report)
-                    println(
-                        """
+                val reportPath = writeReport(report)
+                println(
+                    """
                         |Maven-sync integration test discovery report:
                         |  source:    ${config.source.url}
                         |  paths:     ${options.paths}
@@ -75,37 +75,35 @@ class MavenSyncIntegrationTest :
                         |  assets:    ${report.assetCount}
                         |  report:    $reportPath
                         """
-                            .trimMargin()
-                    )
+                        .trimMargin()
+                )
 
-                    withClue(
-                        "No artifacts discovered — check source URL, credentials, and paths."
-                    ) {
-                        report.artifacts.keys.shouldNotBeEmpty()
+                withClue("No artifacts discovered — check source URL, credentials, and paths.") {
+                    report.artifacts.keys.shouldNotBeEmpty()
+                }
+                report.artifacts.forEach { (artifactKey, versions) ->
+                    withClue("Artifact $artifactKey has no versions") {
+                        versions.keys.shouldNotBeEmpty()
                     }
-                    report.artifacts.forEach { (artifactKey, versions) ->
-                        withClue("Artifact $artifactKey has no versions") {
-                            versions.keys.shouldNotBeEmpty()
-                        }
-                        versions.forEach { (version, assets) ->
-                            withClue("Artifact $artifactKey version $version has no assets") {
-                                assets.shouldNotBeEmpty()
-                            }
-                        }
-                    }
-
-                    val expectedPath = System.getenv("MAVEN_SYNC_IT_EXPECTED")
-                    if (!expectedPath.isNullOrBlank()) {
-                        val expected = File(expectedPath).readText().trim()
-                        withClue(
-                            "Discovery report differs from snapshot at $expectedPath " +
-                                "(live report: $reportPath)"
-                        ) {
-                            report.toJson().trim() shouldBe expected
+                    versions.forEach { (version, assets) ->
+                        withClue("Artifact $artifactKey version $version has no assets") {
+                            assets.shouldNotBeEmpty()
                         }
                     }
                 }
+
+                val expectedPath = System.getenv("MAVEN_SYNC_IT_EXPECTED")
+                if (!expectedPath.isNullOrBlank()) {
+                    val expected = File(expectedPath).readText().trim()
+                    withClue(
+                        "Discovery report differs from snapshot at $expectedPath " +
+                            "(live report: $reportPath)"
+                    ) {
+                        report.toJson().trim() shouldBe expected
+                    }
+                }
             }
+        }
     })
 
 private fun loadIntegrationConfig(file: File): SyncConfig =
@@ -179,8 +177,7 @@ private class DiscoveryReport {
                 '\n' -> sb.append("\\n")
                 '\r' -> sb.append("\\r")
                 '\t' -> sb.append("\\t")
-                else ->
-                    if (c.code < 0x20) sb.append("\\u%04x".format(c.code)) else sb.append(c)
+                else -> if (c.code < 0x20) sb.append("\\u%04x".format(c.code)) else sb.append(c)
             }
         }
         sb.append("\"")

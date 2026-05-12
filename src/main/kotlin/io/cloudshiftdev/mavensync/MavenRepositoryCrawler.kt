@@ -33,7 +33,7 @@ internal class MavenRepositoryCrawler(
         url: Url,
         crawlDelay: Duration,
     ) {
-        logger.info { "Reading index: $url" }
+        logger.debug { "Reading index: $url" }
         val childLinks = httpClient.parseDirectoryListing(url)
 
         logger.debug { "Found ${childLinks.size} links in $url" }

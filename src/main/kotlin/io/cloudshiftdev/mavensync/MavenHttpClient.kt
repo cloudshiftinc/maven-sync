@@ -37,13 +37,13 @@ internal class MavenHttpClient(
                 setBody(LocalFileContent(file))
             }
         val size = file.length()
-        logger.info { "Uploaded $url: status=${resp.status} size=$size" }
+        logger.debug { "Uploaded $url: status=${resp.status} size=$size" }
         return size
     }
 
     internal suspend fun upload(url: Url, content: String) {
         val resp = httpClient.put(url) { setBody(content) }
-        logger.info { "Uploaded $url: ${resp.status}" }
+        logger.debug { "Uploaded $url: ${resp.status}" }
     }
 
     internal suspend fun parseDirectoryListing(url: Url): List<Url> {
