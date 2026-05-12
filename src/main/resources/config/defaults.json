@@ -4,11 +4,13 @@
   "artifactConcurrency" : 3,
   "source": {
     "logHttpHeaders" : false,
+    "trustAllCerts" : true,
     "crawlDelay": "100ms",
     "downloadDelay": "1s",
     "paths": []
   },
   "target": {
-    "logHttpHeaders" : false
+    "logHttpHeaders" : false,
+    "trustAllCerts" : true
   }
 }

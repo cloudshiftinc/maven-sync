@@ -5,6 +5,9 @@ import io.ktor.http.*
 internal val Url.filename: Filename
     get() = Filename(encodedPath.substringAfterLast("/"))
 
+internal val Url.isDirectory: Boolean
+    get() = encodedPath.endsWith("/")
+
 internal fun String.normalizeUrlPath(): String {
     return when {
         endsWith('/') -> this

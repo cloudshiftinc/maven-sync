@@ -28,6 +28,7 @@ dependencies {
     implementation(libs.ktor.client.auth)
     implementation(libs.ktor.client.logging)
     implementation(libs.kotlinx.coroutines)
+    implementation(libs.kotlinx.datetime)
 
     implementation(libs.oshai.kotlinLogging)
 
