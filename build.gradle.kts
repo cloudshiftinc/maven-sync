@@ -96,6 +96,8 @@ testing {
                     implementation(platform(libs.kotest.bom))
                     implementation(libs.kotest.assertions.core)
                     implementation(libs.kotest.runner.junit5)
+                    implementation(platform(libs.ktor.bom))
+                    implementation(libs.ktor.client.mock)
                 }
                 targets {
                     all {

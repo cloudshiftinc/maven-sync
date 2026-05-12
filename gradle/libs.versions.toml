@@ -35,3 +35,5 @@ ksoup-base = {module = "com.fleeksoft.ksoup:ksoup", version = "0.2.4" }
 kotest-bom = { module = "io.kotest:kotest-bom", version = "6.1.11" }
 kotest-assertions-core = { module = "io.kotest:kotest-assertions-core" }
 kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5" }
+
+ktor-client-mock = { module = "io.ktor:ktor-client-mock" }
