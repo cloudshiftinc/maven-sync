@@ -22,7 +22,10 @@ pluginManagement {
     require(JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21)) {
         "This build requires Gradle to be run with at least Java 21"
     }
-    repositories { maven("https://cache-redirector.jetbrains.com/plugins.gradle.org") }
+    repositories {
+        maven("https://cache-redirector.jetbrains.com/plugins.gradle.org")
+        maven("https://cache-redirector.jetbrains.com/repo1.maven.org/maven2")
+    }
 }
 
 plugins {
