@@ -35,12 +35,19 @@ internal class FakeMavenHttpRepository(private val label: String) : MavenHttpRep
         return assets[coordinates].orEmpty()
     }
 
-    override suspend fun copyAsset(asset: ArtifactVersionAsset, targetRepository: MavenHttpRepository) {
+    var copyAssetBehavior: suspend (ArtifactVersionAsset) -> Long = { 0L }
+
+    override suspend fun copyAsset(
+        asset: ArtifactVersionAsset,
+        targetRepository: MavenHttpRepository,
+    ): Long {
         copyCalls += asset to targetRepository
+        return copyAssetBehavior(asset)
     }
 
-    override suspend fun uploadAsset(asset: ArtifactVersionAsset, file: Path) {
+    override suspend fun uploadAsset(asset: ArtifactVersionAsset, file: Path): Long {
         uploadCalls += asset to file
+        return 0L
     }
 
     override suspend fun releaseVersion(coordinates: Coordinates) {

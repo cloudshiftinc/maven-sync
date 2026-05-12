@@ -22,9 +22,9 @@ internal interface MavenHttpRepository : AutoCloseable {
         includeSignatures: Boolean,
     ): List<ArtifactVersionAsset>
 
-    suspend fun copyAsset(asset: ArtifactVersionAsset, targetRepository: MavenHttpRepository)
+    suspend fun copyAsset(asset: ArtifactVersionAsset, targetRepository: MavenHttpRepository): Long
 
-    suspend fun uploadAsset(asset: ArtifactVersionAsset, file: Path)
+    suspend fun uploadAsset(asset: ArtifactVersionAsset, file: Path): Long
 
     suspend fun releaseVersion(coordinates: Coordinates)
 
@@ -100,14 +100,14 @@ internal class DefaultMavenHttpRepository(
     override suspend fun copyAsset(
         asset: ArtifactVersionAsset,
         targetRepository: MavenHttpRepository,
-    ) {
-        mavenHttpClient.download(url(asset.coordinates, asset.name)) { _, file ->
+    ): Long {
+        return mavenHttpClient.download(url(asset.coordinates, asset.name)) { _, file ->
             targetRepository.uploadAsset(asset, file.toPath())
         }
     }
 
-    override suspend fun uploadAsset(asset: ArtifactVersionAsset, file: Path) {
-        mavenHttpClient.upload(url(asset.coordinates, asset.name), file.toFile())
+    override suspend fun uploadAsset(asset: ArtifactVersionAsset, file: Path): Long {
+        return mavenHttpClient.upload(url(asset.coordinates, asset.name), file.toFile())
     }
 
     override suspend fun releaseVersion(coordinates: Coordinates) {

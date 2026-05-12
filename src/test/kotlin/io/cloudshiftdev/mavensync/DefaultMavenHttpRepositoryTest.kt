@@ -38,13 +38,27 @@ private class CannedListingParser(private val byUrl: Map<String, List<Url>>) :
 }
 
 private fun MockRequestHandleScope.respondXml(body: String) =
-    respond(body, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, ContentType.Application.Xml.toString()))
+    respond(
+        body,
+        HttpStatusCode.OK,
+        headersOf(HttpHeaders.ContentType, ContentType.Application.Xml.toString()),
+    )
 
-private fun MockRequestHandleScope.respondHtml(body: String = "<html><body><pre></pre></body></html>") =
-    respond(body, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, ContentType.Text.Html.toString()))
+private fun MockRequestHandleScope.respondHtml(
+    body: String = "<html><body><pre></pre></body></html>"
+) =
+    respond(
+        body,
+        HttpStatusCode.OK,
+        headersOf(HttpHeaders.ContentType, ContentType.Text.Html.toString()),
+    )
 
 private fun MockRequestHandleScope.respondNotFound() =
-    respond("not found", HttpStatusCode.NotFound, headersOf(HttpHeaders.ContentType, ContentType.Text.Plain.toString()))
+    respond(
+        "not found",
+        HttpStatusCode.NotFound,
+        headersOf(HttpHeaders.ContentType, ContentType.Text.Plain.toString()),
+    )
 
 private fun buildHttpClient(
     handler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData
@@ -54,8 +68,9 @@ private fun buildHttpClient(
         expectSuccess = true
         HttpResponseValidator {
             handleResponseExceptionWithRequest { exception, _ ->
-                if (exception is ClientRequestException &&
-                    exception.response.status == HttpStatusCode.NotFound
+                if (
+                    exception is ClientRequestException &&
+                        exception.response.status == HttpStatusCode.NotFound
                 ) {
                     throw MissingContentException(exception.response, exception.message)
                 }
@@ -64,13 +79,12 @@ private fun buildHttpClient(
     }
 }
 
-private fun metadataXml(versions: List<String>): String =
-    buildString {
-        append("<metadata><groupId>com.example</groupId><artifactId>foo</artifactId>")
-        append("<versioning><versions>")
-        versions.forEach { append("<version>$it</version>") }
-        append("</versions></versioning></metadata>")
-    }
+private fun metadataXml(versions: List<String>): String = buildString {
+    append("<metadata><groupId>com.example</groupId><artifactId>foo</artifactId>")
+    append("<versioning><versions>")
+    versions.forEach { append("<version>$it</version>") }
+    append("</versions></versioning></metadata>")
+}
 
 private fun HttpRequestData.bodyText(): String = (body as TextContent).text
 
@@ -142,7 +156,8 @@ class DefaultMavenHttpRepositoryTest :
 
         context("queryArtifactMetadata") {
             test("returns empty metadata on 404") {
-                val mavenClient = autoClose(MavenHttpClient(buildHttpClient { _ -> respondNotFound() }))
+                val mavenClient =
+                    autoClose(MavenHttpClient(buildHttpClient { _ -> respondNotFound() }))
                 val repo = DefaultMavenHttpRepository(Url(REPO), mavenClient, fixedClock)
 
                 val md = repo.queryArtifactMetadata(group, artifact)
@@ -154,18 +169,21 @@ class DefaultMavenHttpRepositoryTest :
             test("parses returned XML on 200") {
                 val mavenClient =
                     autoClose(
-                        MavenHttpClient(buildHttpClient { _ -> respondXml(metadataXml(listOf("1.0", "1.1"))) })
+                        MavenHttpClient(
+                            buildHttpClient { _ -> respondXml(metadataXml(listOf("1.0", "1.1"))) }
+                        )
                     )
                 val repo = DefaultMavenHttpRepository(Url(REPO), mavenClient, fixedClock)
 
                 val md = repo.queryArtifactMetadata(group, artifact)
-                md.artifactVersions shouldBe
-                    listOf(ArtifactVersion("1.0"), ArtifactVersion("1.1"))
+                md.artifactVersions shouldBe listOf(ArtifactVersion("1.0"), ArtifactVersion("1.1"))
             }
         }
 
         context("releaseVersion") {
-            test("uploads metadata XML containing existing + new version with deterministic timestamp") {
+            test(
+                "uploads metadata XML containing existing + new version with deterministic timestamp"
+            ) {
                 val coords = Coordinates(group, artifact, ArtifactVersion("2.0"))
                 val requests = mutableListOf<HttpRequestData>()
 
@@ -177,7 +195,8 @@ class DefaultMavenHttpRepositoryTest :
                                 when (request.method) {
                                     HttpMethod.Get -> respondXml(metadataXml(listOf("1.0")))
                                     HttpMethod.Put -> respond("", HttpStatusCode.OK)
-                                    else -> respond("unexpected", HttpStatusCode.InternalServerError)
+                                    else ->
+                                        respond("unexpected", HttpStatusCode.InternalServerError)
                                 }
                             }
                         )
@@ -214,7 +233,8 @@ class DefaultMavenHttpRepositoryTest :
                                         puts += request
                                         respond("", HttpStatusCode.OK)
                                     }
-                                    else -> respond("unexpected", HttpStatusCode.InternalServerError)
+                                    else ->
+                                        respond("unexpected", HttpStatusCode.InternalServerError)
                                 }
                             }
                         )
@@ -257,10 +277,13 @@ class DefaultMavenHttpRepositoryTest :
                     )
                 val repo = DefaultMavenHttpRepository(Url(REPO), mavenClient, fixedClock)
 
-                repo.listArtifactVersionAssets(coords, includeChecksums = false, includeSignatures = false)
+                repo.listArtifactVersionAssets(
+                    coords,
+                    includeChecksums = false,
+                    includeSignatures = false,
+                )
 
-                captured.single().toString() shouldBe
-                    "${REPO}com/example/deep/module/foo/1.0/"
+                captured.single().toString() shouldBe "${REPO}com/example/deep/module/foo/1.0/"
             }
         }
     })

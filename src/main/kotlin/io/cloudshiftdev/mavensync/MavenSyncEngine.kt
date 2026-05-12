@@ -1,6 +1,8 @@
 package io.cloudshiftdev.mavensync
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.TimeSource
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.coroutineScope
@@ -15,6 +17,7 @@ internal class MavenSyncEngine(
     private val source: MavenHttpRepository,
     private val target: MavenHttpRepository,
     private val options: SyncOptions,
+    private val metrics: SyncMetrics,
 ) {
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun sync() = coroutineScope {
@@ -32,6 +35,9 @@ internal class MavenSyncEngine(
         val targetMetadata = target.queryArtifactMetadata(metadata.group, metadata.artifact)
         val sourceVersions = metadata.artifactVersions.toSet()
         val targetVersions = targetMetadata.artifactVersions.toSet()
+        val inSyncVersions = sourceVersions intersect targetVersions
+        metrics.recordInSync(metadata.group, metadata.artifact, inSyncVersions)
+
         val missingVersions = sourceVersions - targetVersions
         if (missingVersions.isEmpty()) {
             logger.debug { "No missing versions for ${metadata.group}:${metadata.artifact}" }
@@ -42,21 +48,38 @@ internal class MavenSyncEngine(
         }
         missingVersions
             .map { Coordinates(metadata.group, metadata.artifact, it) }
-            .forEach { coordinates ->
-                val assets =
-                    source.listArtifactVersionAssets(
-                        coordinates,
-                        options.transferChecksums,
-                        options.transferSignatures,
-                    )
+            .forEach { coordinates -> syncVersion(coordinates) }
+    }
 
-                if (assets.isNotEmpty()) {
-                    assets.forEach { asset -> source.copyAsset(asset, target) }
+    private suspend fun syncVersion(coordinates: Coordinates) {
+        val mark = TimeSource.Monotonic.markNow()
+        try {
+            val assets =
+                source.listArtifactVersionAssets(
+                    coordinates,
+                    options.transferChecksums,
+                    options.transferSignatures,
+                )
 
-                    target.releaseVersion(coordinates)
+            if (assets.isEmpty()) return
 
-                    delay(options.downloadDelay)
-                }
-            }
+            var bytes = 0L
+            assets.forEach { asset -> bytes += source.copyAsset(asset, target) }
+            target.releaseVersion(coordinates)
+            metrics.recordSynced(
+                coordinates = coordinates,
+                assetCount = assets.size,
+                bytes = bytes,
+                duration = mark.elapsedNow(),
+            )
+
+            delay(options.downloadDelay)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            val msg = e.message ?: e.toString()
+            logger.error(e) { "Failed to sync $coordinates: $msg" }
+            metrics.recordFailure(coordinates, msg, mark.elapsedNow())
+        }
     }
 }
