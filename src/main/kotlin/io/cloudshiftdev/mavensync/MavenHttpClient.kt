@@ -30,13 +30,15 @@ internal class MavenHttpClient(
         httpClient.close()
     }
 
-    internal suspend fun upload(url: Url, file: File) {
+    internal suspend fun upload(url: Url, file: File): Long {
         val resp =
             httpClient.put(url) {
                 contentType(ContentType.Application.OctetStream)
                 setBody(LocalFileContent(file))
             }
-        logger.info { "Uploaded $url: status=${resp.status} size=${file.length()}" }
+        val size = file.length()
+        logger.info { "Uploaded $url: status=${resp.status} size=$size" }
+        return size
     }
 
     internal suspend fun upload(url: Url, content: String) {

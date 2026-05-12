@@ -27,10 +27,17 @@ public suspend fun main(args: Array<String>) {
 
     logger.info { "Effective configuration: $config" }
 
-    config.source.toMavenHttpRepository().use { source ->
-        config.target.toMavenHttpRepository().use { target ->
-            MavenSyncEngine(source, target, config.toSyncOptions()).sync()
+    val metrics = SyncMetrics()
+    try {
+        config.source.toMavenHttpRepository().use { source ->
+            config.target.toMavenHttpRepository().use { target ->
+                MavenSyncEngine(source, target, config.toSyncOptions(), metrics).sync()
+            }
         }
+    } finally {
+        val report = metrics.snapshot()
+        logger.info { "\n" + report.renderDetailed() }
+        logger.info { "\n" + report.renderSummary() }
     }
 }
 
