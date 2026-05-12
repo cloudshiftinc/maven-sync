@@ -6,6 +6,7 @@ import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.ExperimentalHoplite
 import com.sksamuel.hoplite.addFileSource
 import com.sksamuel.hoplite.addResourceSource
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -15,6 +16,10 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.TreeMap
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.TimeSource
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * Source-side integration test. Drives a real `MavenHttpRepository` against a user-supplied repo
@@ -32,22 +37,33 @@ class MavenSyncIntegrationTest :
     FunSpec({
         val configPath = System.getenv("MAVEN_SYNC_IT_CONFIG")
         val enabled = !configPath.isNullOrBlank()
+        val timeoutMinutes = System.getenv("MAVEN_SYNC_IT_TIMEOUT_MINUTES")?.toLongOrNull() ?: 15L
 
         test("discovers artifacts, versions, and assets from a real source repo").config(
-            enabled = enabled
+            enabled = enabled,
+            timeout = timeoutMinutes.minutes,
         ) {
+            val start = TimeSource.Monotonic.markNow()
             val config = loadIntegrationConfig(File(configPath!!))
             val options = config.toSyncOptions()
 
             config.source.toMavenHttpRepository().use { source ->
                 val target = FakeMavenHttpRepository("integration-test-target")
                 val report = DiscoveryReport()
+                var artifactsSeen = 0
+                var versionsListed = 0
 
                 source.crawl(options.paths, options.crawlDelay).collect { metadata ->
+                    artifactsSeen++
                     val targetMetadata =
                         target.queryArtifactMetadata(metadata.group, metadata.artifact)
                     val missingVersions =
                         metadata.artifactVersions.toSet() - targetMetadata.artifactVersions.toSet()
+                    logger.info {
+                        "[$artifactsSeen] ${metadata.group.value}:${metadata.artifact.value} " +
+                            "versions=${metadata.artifactVersions.size} " +
+                            "missing=${missingVersions.size} elapsed=${start.elapsedNow()}"
+                    }
                     missingVersions.forEach { version ->
                         val coordinates = Coordinates(metadata.group, metadata.artifact, version)
                         val assets =
@@ -57,6 +73,12 @@ class MavenSyncIntegrationTest :
                                 options.transferSignatures,
                             )
                         report.add(coordinates, assets)
+                        versionsListed++
+                        if (versionsListed % 25 == 0) {
+                            logger.info {
+                                "…listed $versionsListed versions, elapsed=${start.elapsedNow()}"
+                            }
+                        }
                     }
                 }
 
@@ -73,6 +95,7 @@ class MavenSyncIntegrationTest :
                         |  artifacts: ${report.artifactCount}
                         |  versions:  ${report.versionCount}
                         |  assets:    ${report.assetCount}
+                        |  elapsed:   ${start.elapsedNow()}
                         |  report:    $reportPath
                         """
                         .trimMargin()
