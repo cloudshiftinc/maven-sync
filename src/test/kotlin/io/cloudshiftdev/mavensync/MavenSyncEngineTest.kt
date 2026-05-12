@@ -6,20 +6,19 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import kotlin.time.Duration
 
-private fun defaultOptions(
-    transferChecksums: Boolean = false,
-    transferSignatures: Boolean = true,
-) = SyncOptions(
-    transferChecksums = transferChecksums,
-    transferSignatures = transferSignatures,
-    artifactConcurrency = 1,
-    crawlDelay = Duration.ZERO,
-    downloadDelay = Duration.ZERO,
-    paths = emptyList(),
-)
+private fun defaultOptions(transferChecksums: Boolean = false, transferSignatures: Boolean = true) =
+    SyncOptions(
+        transferChecksums = transferChecksums,
+        transferSignatures = transferSignatures,
+        artifactConcurrency = 1,
+        crawlDelay = Duration.ZERO,
+        downloadDelay = Duration.ZERO,
+        paths = emptyList(),
+    )
 
 private val group = Group("com.example")
 private val artifact = Artifact("foo")
+
 private fun coords(v: String) = Coordinates(group, artifact, ArtifactVersion(v))
 
 class MavenSyncEngineTest :
@@ -28,12 +27,20 @@ class MavenSyncEngineTest :
             val source = FakeMavenHttpRepository("source")
             val target = FakeMavenHttpRepository("target")
             target.seedMetadata(
-                ArtifactMetadata(group, artifact, listOf(ArtifactVersion("1.0"), ArtifactVersion("1.1")))
+                ArtifactMetadata(
+                    group,
+                    artifact,
+                    listOf(ArtifactVersion("1.0"), ArtifactVersion("1.1")),
+                )
             )
             val engine = MavenSyncEngine(source, target, defaultOptions())
 
             engine.handleArtifact(
-                ArtifactMetadata(group, artifact, listOf(ArtifactVersion("1.0"), ArtifactVersion("1.1")))
+                ArtifactMetadata(
+                    group,
+                    artifact,
+                    listOf(ArtifactVersion("1.0"), ArtifactVersion("1.1")),
+                )
             )
 
             source.listAssetCalls.shouldBeEmpty()
@@ -62,8 +69,9 @@ class MavenSyncEngineTest :
             )
 
             source.listAssetCalls.map { it.first } shouldContainExactlyInAnyOrder listOf(v11, v20)
-            source.copyCalls.map { (asset, repo) -> asset.coordinates to repo } shouldContainExactlyInAnyOrder
-                listOf(v11 to target, v20 to target)
+            source.copyCalls.map { (asset, repo) ->
+                asset.coordinates to repo
+            } shouldContainExactlyInAnyOrder listOf(v11 to target, v20 to target)
             target.releaseCalls shouldContainExactlyInAnyOrder listOf(v11, v20)
         }
 

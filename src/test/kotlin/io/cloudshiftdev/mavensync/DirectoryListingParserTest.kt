@@ -26,10 +26,7 @@ class DirectoryListingParserTest :
                 )
 
             parser.parse(baseUrl, doc) shouldContainExactlyInAnyOrder
-                listOf(
-                    Url("${BASE}bar.jar"),
-                    Url("${BASE}foo/"),
-                )
+                listOf(Url("${BASE}bar.jar"), Url("${BASE}foo/"))
         }
 
         test("filters out links not anchored to the base URL") {
@@ -44,15 +41,13 @@ class DirectoryListingParserTest :
         }
 
         test("infers directory and adds trailing slash when href omits it") {
-            val doc =
-                listing("<a href=\"foo\">foo</a> 2024-01-01 12:00 -\n")
+            val doc = listing("<a href=\"foo\">foo</a> 2024-01-01 12:00 -\n")
 
             parser.parse(baseUrl, doc) shouldBe listOf(Url("${BASE}foo/"))
         }
 
         test("throws when listing text has the wrong number of pieces") {
-            val doc =
-                listing("<a href=\"foo.jar\">foo.jar</a> 2024-01-01 12:00\n")
+            val doc = listing("<a href=\"foo.jar\">foo.jar</a> 2024-01-01 12:00\n")
 
             val ex = shouldThrow<IllegalStateException> { parser.parse(baseUrl, doc) }
             ex.cause shouldNotBe null
