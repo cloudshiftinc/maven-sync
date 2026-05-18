@@ -38,7 +38,7 @@ dependencies {
     implementation(libs.sksmauel.hoplite.json)
 
     implementation("ch.qos.logback:logback-classic:1.5.32")
-    implementation("org.apache.maven:maven-artifact:3.9.15")
+    implementation("org.apache.maven:maven-artifact:3.9.16")
 }
 
 ktfmt { kotlinLangStyle() }
