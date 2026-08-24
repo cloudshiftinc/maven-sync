@@ -3,12 +3,12 @@
 [versions]
 kotlin = "2.3.21"
 hoplite = "2.9.0"
-vanniktech-publish = "0.36.0"
+vanniktech-publish = "0.37.0"
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 vanniktech-mavenPublishBase = { id = "com.vanniktech.maven.publish.base", version.ref = "vanniktech-publish" }
-ktfmt = { id = "com.ncorti.ktfmt.gradle", version = "0.26.0" }
+ktfmt = { id = "com.ncorti.ktfmt.gradle", version = "0.27.0" }
 
 
 [libraries]
@@ -16,9 +16,9 @@ kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core",
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = "0.7.1" }
 oshai-kotlinLogging = { module = "io.github.oshai:kotlin-logging-jvm", version = "7.0.14" }
 pearx-kasechange = { module = "net.pearx.kasechange:kasechange-jvm", version = "1.4.1" }
-guava = { module = "com.google.guava:guava", version = "33.6.0-jre" }
+guava = { module = "com.google.guava:guava", version = "33.7.1-jre" }
 
-ktor-bom = { module = "io.ktor:ktor-bom", version = "3.4.3" }
+ktor-bom = { module = "io.ktor:ktor-bom", version = "3.5.2" }
 
 ktor-client-core = { module = "io.ktor:ktor-client-core" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp" }
@@ -32,7 +32,7 @@ ksoup-base = {module = "com.fleeksoft.ksoup:ksoup", version = "0.2.6" }
 
 ##### Testing libraries
 
-kotest-bom = { module = "io.kotest:kotest-bom", version = "6.1.11" }
+kotest-bom = { module = "io.kotest:kotest-bom", version = "6.2.4" }
 kotest-assertions-core = { module = "io.kotest:kotest-assertions-core" }
 kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5" }
 
